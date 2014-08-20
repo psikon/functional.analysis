@@ -1,0 +1,9 @@
+data_loading: off
+cache_loading: off
+recursive_loading: off
+munging: on
+logging: off
+load_libraries: on
+libraries: reshape, plyr, ggplot2, stringr, lubridate, devtools, GO.db, GSEABase, pbapply
+as_factors: on
+data_tables: off
