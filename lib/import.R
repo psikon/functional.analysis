@@ -1,4 +1,4 @@
-
+#' wrapper for importing the table output from hmmsearch
 import.pfamTable <- function(file) {
   # load pfam annotation file
   pfam <- read.table(file, sep = "", as.is = T)
@@ -6,9 +6,10 @@ import.pfamTable <- function(file) {
                       "evalue", "score", "bias", "evalue2", "score2",
                       "bias2", "exp", "reg", "clu", "ov", "env", 
                       "dom", "rep", "inc", "description")
-  pfam
+  return(pfam)
 }
 
+#'
 import.pfam2go <- function(file) {
   data <- readLines(file)
   # remove header

@@ -22,13 +22,20 @@ clean.pfamId <- function(pfam) {
 #'@return data.frame
 #'
 calculate.abundance <- function(pfam.table) {
-  # count pfam ids and create a table
-  raw_counts = rle(as.vector(pfam.table[, "pfam"]))
-  # convert the table in a data.frame
-  pfam_counts = data.frame("pfam" = clean.pfamId(raw_counts$values),
-                           "count" = raw_counts$lengths)
-  # make the fields type safe
-  pfam_counts$pfam <- as.character(pfam_counts$pfam)
-  pfam_counts$count <- as.integer(pfam_counts$count)
-  return(pfam_counts)
+    
+    # count the occurences of pfam ids
+    pfam.count <- as.data.frame(table(pfam.table$pfam))
+    
+    # adjust names
+    names(pfam.count) <- c("pfam", "count")
+    
+    # make the fields type safe
+    pfam.count$pfam <- as.character(pfam.count$pfam)
+    pfam.count$count <- as.integer(pfam.count$count)
+    pfam.count$pfam <- clean.pfamId(pfam.count$pfam)
+    # sort the data.frame descending by occurences
+    pfam.count <- arrange(pfam.count,desc(count))
+    
+    return(pfam.count)
 }
+

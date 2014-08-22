@@ -1,4 +1,4 @@
-#' @title pfam2GO
+4#' @title pfam2GO
 #' 
 #' @details a pfam count table into new dataframe with the following fields:
 #'      \item sample.id - identifier of sample
@@ -14,6 +14,12 @@
 #' 
 pfam2GO <- function(pfam.table, sample.id, pfam2go.mapping, GO.db = NULL) {
   
+  # load requiered Databases from GO.db package - for speedup the look up process
+  if (is.null(GO.db)) GO.db <- init.GO.db()
+  ancestor.db <- list(mf = as.list(GOMFANCESTOR),
+                      bp = as.list(GOBPANCESTOR),
+                      cc = as.list(GOCCANCESTOR))
+  
   data <- pblapply(pfam.table$pfam, function(x) {
     # find mapped GO:Ids for pfam id
     go <- pfam2go.mapping[grep(x, as.character(pfam2go.mapping$id)), ]
@@ -23,7 +29,7 @@ pfam2GO <- function(pfam.table, sample.id, pfam2go.mapping, GO.db = NULL) {
       supplemental <- do.call(rbind.data.frame,
                               lapply(go$go_id, function(x) {
                                 data.frame("ontology" = get.Ontology(x, GO.db),
-                                           "ancestor" = get.Ancestor(x))
+                                           "ancestor" = get.Ancestor(x, ancestor.db))
                                 }))
       # create data.frame from go mapping and combine it 
       # with supplementary data.frame and count information
