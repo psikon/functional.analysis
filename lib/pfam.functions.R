@@ -1,9 +1,14 @@
-#'@title clean.pfamId
+#' clean.pfamID
 #'
-#'get a vector pfam id as input and remove entries after '.'
+#' remove artifacts from the pfam ids to make them comparable to the
+#' mapping file
+#' 
+#'@param pfam           pfam ids
 #'
-#'@return character
-clean.pfamId <- function(pfam) {
+#'@return pfam ids
+#'@export
+#'
+clean.pfamID <- function(pfam) {
   pfam <- unlist(lapply(pfam, function(x){
     # split the string at the '.' and return only the first element
     strsplit(x,"\\.")[[1]][1]
@@ -13,13 +18,14 @@ clean.pfamId <- function(pfam) {
 
 
 
-#'@title calculate.PfamAbundance
+#' calculate.abundance
 #'
-#' count the occurences of pfam ids from an imported pfam file
-#' the output consists of two fields:
-#'    \item pfam id - clean name of the pfam id
-#'    \item count   - occurences of the pfam id
+#' count the abundance value for the pfam ids
+#' 
+#'@param pfam.table       data.frame with pfam ids
+#'
 #'@return data.frame
+#'@export
 #'
 calculate.abundance <- function(pfam.table) {
     
@@ -32,9 +38,9 @@ calculate.abundance <- function(pfam.table) {
     # make the fields type safe
     pfam.count$pfam <- as.character(pfam.count$pfam)
     pfam.count$count <- as.integer(pfam.count$count)
-    pfam.count$pfam <- clean.pfamId(pfam.count$pfam)
+    pfam.count$pfam <- clean.pfamID(pfam.count$pfam)
     # sort the data.frame descending by occurences
-    pfam.count <- arrange(pfam.count,desc(count))
+    pfam.count <- arrange(pfam.count, desc(count))
     
     return(pfam.count)
 }

@@ -7,7 +7,7 @@ load.project()
 # load GO database from GO.db package
 GO.db <- init.GO.db() 
 # load pfam2GO mapping from interpro 
-pfam2go <- import.pfam2go("data/mapping/pfam2go.obo")
+pfam2go <- read.pfam2go("data/mapping/pfam2go.obo")
 
 # get lists of all needed files
 pfam.files <- pfam.fileList()
@@ -16,14 +16,14 @@ remap.files <- remap.fileList()
 
 # create remaped pfam files
 for(i in 1:length(pfam.files)) {
-    remap.Clstr2Pfam(pfam.files[[i]],
-                     clstr.files[[i]],
-                     remap.files[[i]])
+    remap.cluster2pfam(pfam.files[[i]],
+                       clstr.files[[i]],
+                       remap.files[[i]])
 }
 
-pfam.60 <- import.pfamTable(file = "data/pfam_remap/clustered.60.remap.hmmsearch") 
-pfam.64 <- import.pfamTable(file = "data/pfam_remap/clustered.64.remap.hmmsearch")
-pfam.70 <- import.pfamTable(file = "data/pfam_remap/clustered.70.remap.hmmsearch")
+pfam.60 <- read.pfam("data/pfam_remap/clustered.60.remap.hmmsearch") 
+pfam.64 <- read.pfam("data/pfam_remap/clustered.64.remap.hmmsearch")
+pfam.70 <- read.pfam("data/pfam_remap/clustered.70.remap.hmmsearch")
 
 # calculate abundance
 pfam.60.count <- calculate.abundance(pfam.60)
