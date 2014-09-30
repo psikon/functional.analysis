@@ -35,7 +35,7 @@ get.linage <- function(index, complete.obo) {
   # build up linage until element is root
   while(rship != "root") {
     # find the parent in data.frame
-    data <- data.frame[grep(data$parent_id, data.frame$id), ]
+    data <- complete.obo[grep(data$parent_id, complete.obo$id), ]
     # if parent has different ontology abort and give empty linage
     if (all(unique(data$ontology) != onto)) {
       linage <- NA

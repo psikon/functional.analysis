@@ -109,17 +109,17 @@ get.GOancestor <- function(id, ancestor.db = NULL) {
     # trim whitspace and convert id in character 
     x <- str_trim(as.character(x))
     # check go id for ontology
-    if (x %in% names(ancestor.db[["mf"]])) {
+    if (x %in% names(ancestor.db[["bp"]])) {
+      ancestor <- ancestor.db[["bp"]][[grep(x, names(ancestor.db[["bp"]]))]]
+      ancestor <- paste(ancestor[-length(ancestor)], collapse = ",")
+    } else if (x %in% names(ancestor.db[["mf"]])) {
       ancestor <- ancestor.db[["mf"]][[grep(x, names(ancestor.db[["mf"]]))]]
       ancestor <- paste(ancestor[-length(ancestor)], collapse = ",")
-    } else if (x %in% names(ancestor.db[["bp"]])) {
-        ancestor <- ancestor.db[["bp"]][[grep(x, names(ancestor.db[["bp"]]))]]
-      ancestor <- paste(ancestor[-length(ancestor)], collapse = ",")
     } else if (x %in% names(ancestor.db[["cc"]])) {
-        ancestor <- ancestor.db[["cc"]][[grep(x, names(ancestor.db[["cc"]]))]]
-      ancestor <- paste(ancestor[-length(ancestor)],collapse = ",")
+      ancestor <- ancestor.db[["cc"]][[grep(x, names(ancestor.db[["cc"]]))]]
+      ancestor <- paste(ancestor[-length(ancestor)], collapse = ",")
     } else {
-        ancestor <- x
+      ancestor <- NA
     }
     ancestor
   })

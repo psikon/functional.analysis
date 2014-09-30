@@ -5,7 +5,6 @@
 #' 
 #' @description convert a pfam count table into a new data.frame 
 #'              with the following fields:
-#'                sample.id - identifier of sample
 #'                db        - origin of annotation
 #'                pfam      - pfam id of the protein
 #'                name      - name of the found pfam id
@@ -21,8 +20,7 @@
 #'
 #'@return data.frame
 #'@export
-pfam2GO <- function(pfam.table, 
-                    sample.id, 
+pfam2GO <- function(pfam.count, 
                     pfam2go.mapping, 
                     GO.db = NULL) {
   
@@ -34,29 +32,29 @@ pfam2GO <- function(pfam.table,
                       bp = as.list(GOBPANCESTOR),
                       cc = as.list(GOCCANCESTOR))
   
-  data <- pblapply(pfam.table$pfam, function(x) {
+  data <- pblapply(pfam.count$pfam, function(x) {
     # find mapped GO:Ids for pfam id
     go <- pfam2go.mapping[grep(x, as.character(pfam2go.mapping$id)), ]
     # if go is empty -> list element is NULL else:
     if(nrow(go) > 0) {
       # create data.frame with supplementary data 
       # ontology and ancestors 
-      supplemental <- do.call(rbind.data.frame,
-                              lapply(go$go_id, function(x) {
-                                data.frame("ontology" = get.GOontology(x, GO.db),
-                                           "ancestor" = get.GOancestor(x, ancestor.db))
+      supplemental <- do.call(rbind.data.frame,lapply(go$go_id, 
+                function(x) {
+                  data.frame("ontology" = get.GOontology(x, GO.db),
+                  "ancestor" = get.GOancestor(x, ancestor.db))
                                 }))
       # create data.frame from go mapping and combine it 
       # with supplementary data.frame and count information
       res <- cbind(data.frame(
-        "sample" = as.character(sample.id),
         "db" = as.character("pfam"),
         "pfam" = as.character(go$id),
         "name" = as.character(go$name),       
         "go.id" = as.character(go$go_id),
-        "count" = pfam.table[grep(as.character(x)[1],
-                                  pfam.table$pfam),
-                             "count"]),
+        "count" = pfam.count[grep(as.character(x)[1],
+                                  pfam.count$pfam),
+                             "count"], 
+        stringsAsFactors = F),
         supplemental)
       }
   })
@@ -65,14 +63,49 @@ pfam2GO <- function(pfam.table,
   data <- do.call(rbind.data.frame, data[!sapply(data, is.null)])
   return(data)
 }
-
-# mapGO2slim <- function(annotated.pfam, slim.annotation) {
-#     slim <- lapply(annotated.pfam$go_id, function(x) {
-#                       x <- str_trim(as.character(x))
-#                       ancestors <- get.Ancestor(x)
-#                       slim.ids <- ancestors[which(ancestors %in% slim.annotation$id)]     
-#                       if (is.null(slim.ids)) NA else slim.ids
-#                       })
-#     cbind(annotated.pfam,do.call(rbind,slim))
-# }
+#' go2slim
+#'
+#' assign a linage basing of the slim annotation of gene ontology to
+#' the go.ids 
+#' 
+#' @description convert the annotated go id table to a new data.frame
+#'              with following fields
+#'                pfam      - pfam id of the protein
+#'                go.id     - GO:ID from resulting from mapping
+#'                count     - number of occurences of the pfam id
+#'                ontology  - ontology of the GO:Id (one of BP, MF or CC)
+#'                linage    - linage from the go slim annotation
+#'                
+#'@param pfam.go          go annotated pfam table
+#'@param go2slim.mapping  go2slim mapping object
+#'
+#'@return data.frame
+#'@export
+go2slim <- function(pfam.go, go2slim.mapping) {
+    # assign slim linage to every row
+    slim.linage <- apply(pfam.go, 1, function(x) {
+      # get ancestor
+      ancestor <- x["ancestor"]
+      # convert string to vector
+      ancestor <- unlist(str_split(ancestor,","))
+      # find index of last hit 
+      idx <- max(which(ancestor %in% go2slim.mapping$id == TRUE))
+      # get annotation mapping
+      slim <- go2slim.mapping[which(go2slim.mapping$id %in% ancestor[idx]),]
+      # only assign one linage to go id
+      slim$linage[1]
+    })
+    # build new data.frame with linage
+    slim.annotation <- data.frame(pfam.go$pfam,
+                                  pfam.go$go.id, 
+                                  pfam.go$count,
+                                  pfam.go$ontology,
+                                  as.vector(slim.linage),
+                                  stringsAsFactors = F)
+    # adjust column names
+    colnames(slim.annotation) <- c("pfam.id", "go.id",
+                                   "count", "ontology",
+                                   "slim.linage")
+    return(slim.annotation)    
+}
 
