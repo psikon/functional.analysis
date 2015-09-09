@@ -29,13 +29,18 @@ for(i in 1:length(pfam.files)) {
 pfamList <- lapply(remap.files, function(x) read.pfam(x))
 # calculate abundance for tables
 countList <- lapply(pfamList, function(x) calculate.abundance(x))
+save(pfamList,countList,file="cache/pfam.import.Rdata")
+
 # map go annotation to tables
 goList <- lapply(countList, function(x) pfam2GO(pfam.count = x,
                                             pfam2go.mapping = pfam2go, 
                                             GO.db = GO.db))
 slimList <- lapply(goList, function(x) go2slim(pfam.go = x,
                                                go2slim.mapping = go2slim.map))
+save(goList,slimList, file = "cache/go.annotations.Rdata")
+
+
 
 functional <- create.phyloseq(slimList)
+functional <- subset_species(functional, ontology != "cellular_component")
 
-plot_bar(cc, fill="level1")

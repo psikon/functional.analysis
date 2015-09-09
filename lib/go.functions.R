@@ -109,3 +109,22 @@ go2slim <- function(pfam.go, go2slim.mapping) {
     return(slim.annotation)    
 }
 
+getGOfromSlim <- function(functions, slim_list) {
+  index <- unlist(lapply(functions, FUN = function(x) {
+    grep(x, slim_list[[1]]$slim.linage)
+  }))
+  data <- slim_list[[1]][index, ]
+  return(data)
+}
+
+aggregateGObySlim <- function(functions) {
+  data <- lapply(functions$go.id, function(x){
+    data <- functions[functions$go.id == x,]
+    data.frame(aggregate(count ~ go.id, data = data, FUN = sum),
+               slim.linage = unique(functions$slim.linage))
+  })
+  data <- unique(do.call(rbind, data))
+}
+
+
+
